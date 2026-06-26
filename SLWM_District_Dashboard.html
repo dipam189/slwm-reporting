@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBM-G SLWM — District Dashboard</title>
+<style>
+:root{
+  --gd:#1B4332;--gm:#2D6A4F;--gl:#40916C;--gp:#D8F3DC;--gf:#f0faf3;
+  --am:#F59E0B;--rd:#DC2626;--rl:#FEE2E2;--al:#FEF3C7;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g600:#4b5563;--g800:#1f2937;
+  --fh:Georgia,serif;--fb:Calibri,'Segoe UI',sans-serif;--r:8px;--sh:0 2px 8px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fb);background:var(--g100);color:var(--g800);min-height:100vh;}
+.topbar{background:var(--gd);color:#fff;padding:0 20px;display:flex;align-items:center;
+  justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;gap:10px;}
+.topbar-title{font-family:var(--fh);font-size:15px;}
+.topbar-sub{font-size:11px;opacity:.7;margin-top:2px;}
+.dbadge{background:rgba(255,255,255,.15);border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700;}
+.setup{max-width:420px;margin:60px auto;background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;}
+.setup-head{background:var(--gm);color:#fff;padding:16px 22px;font-family:var(--fh);font-size:15px;}
+.setup-body{padding:22px;display:flex;flex-direction:column;gap:14px;}
+label{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;}
+select,input{border:1.5px solid var(--g200);border-radius:6px;padding:10px 13px;
+  font-family:var(--fb);font-size:14px;color:var(--g800);background:var(--g50);width:100%;}
+select:focus,input:focus{outline:none;border-color:var(--gl);background:#fff;}
+.btn-p{background:var(--gm);color:#fff;border:none;padding:12px;border-radius:6px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:var(--fb);width:100%;}
+.btn-p:hover{background:var(--gd);}
+.errmsg{color:var(--rd);font-size:13px;display:none;}
+.panel{padding:20px;max-width:1020px;margin:0 auto;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:#fff;border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh);border-left:4px solid var(--gl);}
+.kpi.w{border-left-color:var(--am);}
+.kpi.f{border-left-color:var(--rd);}
+.kv{font-family:var(--fh);font-size:24px;font-weight:700;color:var(--gd);line-height:1;}
+.kpi.w .kv{color:#92400e;}
+.kpi.f .kv{color:var(--rd);}
+.kl{font-size:11px;color:var(--g600);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;}
+/* Filter bar */
+.fbar{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;
+  margin-bottom:16px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.fbar-field{display:flex;flex-direction:column;gap:4px;min-width:150px;}
+.fbar-field label{font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;}
+.fbar-field select,.fbar-field input{font-size:13px;padding:7px 10px;width:100%;}
+.fbar-field input{min-width:200px;}
+.clear-btn{background:var(--g100);border:1.5px solid var(--g200);color:var(--g600);
+  padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;}
+.clear-btn:hover{background:var(--g200);}
+/* SHG history panel */
+.shg-history{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;}
+.shg-history-head{background:var(--gm);color:#fff;padding:10px 16px;font-family:var(--fh);font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+.shg-history-body{padding:14px 16px;}
+.history-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--g100);font-size:13px;flex-wrap:wrap;}
+.history-row:last-child{border:none;}
+.hm{font-weight:700;color:var(--gd);min-width:80px;}
+.hstat{display:flex;gap:14px;flex-wrap:wrap;}
+.hstat span{color:var(--g600);}
+.hstat strong{color:var(--g800);}
+.sec-head{font-family:var(--fh);font-size:14px;color:var(--gd);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.exp-btn{background:var(--gf);color:var(--gm);border:1.5px solid var(--gp);
+  padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;}
+.exp-btn:hover{background:var(--gp);}
+.flag-box{background:var(--rl);border:1.5px solid var(--rd);border-radius:var(--r);
+  padding:12px 16px;margin-bottom:14px;}
+.flag-box h3{color:var(--rd);font-family:var(--fh);font-size:13px;margin-bottom:7px;}
+.fi{font-size:13px;padding:5px 0;border-bottom:1px solid rgba(220,38,38,.15);display:flex;gap:8px;}
+.fi:last-child{border:none;}
+.tw{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;overflow-x:auto;margin-bottom:18px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--gd);color:#fff;padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--g100);}
+tbody tr:hover{background:var(--g50);}
+tbody td{padding:8px 12px;vertical-align:top;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge.ok{background:var(--gp);color:var(--gd);}
+.badge.warn{background:var(--al);color:#92400e;}
+.badge.flag{background:var(--rl);color:var(--rd);}
+.shg-link{color:var(--gm);cursor:pointer;text-decoration:underline;font-size:12px;}
+.loading{text-align:center;padding:60px;color:var(--g400);}
+.spin{display:inline-block;font-size:30px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:40px;color:var(--g400);}
+.rbtn{background:var(--gf);color:var(--gm);border:1.5px solid var(--gp);
+  padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr;}.panel{padding:12px;}}
+@media print{.topbar,.fbar,.exp-btn,.rbtn{display:none!important;}body{background:#fff;}}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setupScreen">
+<div class="topbar"><div><div class="topbar-title">SBM-G SLWM — District Dashboard</div><div class="topbar-sub">SPMU · PHED · Government of Assam</div></div></div>
+<div style="padding:24px;">
+<div class="setup">
+  <div class="setup-head">📍 Select Your District</div>
+  <div class="setup-body">
+    <div>
+      <label>District</label>
+      <select id="setupDistrict">
+        <option value="">-- Select your district --</option>
+        <option>Baksa</option><option>Barpeta</option><option>Biswanath</option>
+        <option>Bongaigaon</option><option>Cachar</option><option>Charaideo</option>
+        <option>Chirang</option><option>Darrang</option><option>Dhemaji</option>
+        <option>Dhubri</option><option>Dibrugarh</option><option>Dima Hasao</option>
+        <option>Goalpara</option><option>Golaghat</option><option>Hailakandi</option>
+        <option>Hojai</option><option>Jorhat</option><option>Kamrup (M)</option>
+        <option>Kamrup (R)</option><option>Karbi Anglong</option><option>Karimganj</option>
+        <option>Kokrajhar</option><option>Lakhimpur</option><option>Majuli</option>
+        <option>Morigaon</option><option>Nagaon</option><option>Nalbari</option>
+        <option>Sivasagar</option><option>Sonitpur</option><option>South Salmara-Mankachar</option>
+        <option>Tinsukia</option><option>Udalguri</option><option>West Karbi Anglong</option>
+        <option>Bajali</option><option>Tamulpur</option>
+      </select>
+    </div>
+    <button class="btn-p" onclick="login()">Open Dashboard →</button>
+    <div class="errmsg" id="err">Please select your district.</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashScreen" style="display:none;">
+<div class="topbar">
+  <div><div class="topbar-title">SBM-G SLWM — District Dashboard</div><div class="topbar-sub">SPMU · PHED · Government of Assam</div></div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="dbadge" id="dbadge">📍</span>
+    <button class="rbtn" onclick="loadData()">🔄 Refresh</button>
+    <button class="rbtn" onclick="logout()" style="color:var(--rd);border-color:var(--rd);">Change District</button>
+  </div>
+</div>
+<div class="panel">
+  <div id="loadDiv" class="loading"><span class="spin">⏳</span><br><br>Loading data...</div>
+  <div id="mainDiv" style="display:none;">
+
+    <div id="flagBox" class="flag-box" style="display:none;">
+      <h3>🚩 Flagged — Immediate Action Required</h3>
+      <div id="flagList"></div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv" id="k1">0</div><div class="kl">SHGs Reporting</div></div>
+      <div class="kpi w"><div class="kv" id="k2">0</div><div class="kl">⚠ Needs Attention</div></div>
+      <div class="kpi f"><div class="kv" id="k3">0</div><div class="kl">🚩 Flagged</div></div>
+      <div class="kpi"><div class="kv" id="k4">₹0</div><div class="kl">User Fee Collected</div></div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="fbar">
+      <div class="fbar-field">
+        <label>Month</label>
+        <select id="fMonth" onchange="applyFilters()"><option value="">All Months</option></select>
+      </div>
+      <div class="fbar-field">
+        <label>Status</label>
+        <select id="fStatus" onchange="applyFilters()">
+          <option value="">All Status</option>
+          <option value="ok">✅ OK</option>
+          <option value="warn">⚠ Attention</option>
+          <option value="flag">🚩 Flagged</option>
+        </select>
+      </div>
+      <div class="fbar-field">
+        <label>Search SHG / NGO name</label>
+        <input type="text" id="fSHG" placeholder="Type SHG name..." oninput="applyFilters()">
+      </div>
+      <button class="clear-btn" onclick="clearFilters()">✕ Clear Filters</button>
+    </div>
+
+    <!-- SHG History Panel (shown when searching by name) -->
+    <div id="historyPanel" style="display:none;">
+      <div class="shg-history">
+        <div class="shg-history-head">
+          <span>📈 Monthly History — <span id="historyName"></span></span>
+          <span id="historyMonthCount" style="font-size:12px;opacity:.8;"></span>
+        </div>
+        <div class="shg-history-body" id="historyBody"></div>
+      </div>
+    </div>
+
+    <div class="sec-head">
+      SHG Reports — <span id="distLabel"></span>
+      <div style="display:flex;gap:8px;">
+        <button class="exp-btn" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="exp-btn" onclick="window.print()">🖨 Print</button>
+      </div>
+    </div>
+
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th>SHG / NGO</th><th>GP / Block</th><th>Month</th>
+          <th>HHs</th><th>Trips</th><th>Compost(kg)</th>
+          <th>User Fee(₹)</th><th>UF%</th><th>Meeting</th><th>Status</th><th>History</th>
+        </tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbx1BJNga2na0tk_H3zFZJ68Gg4TX009fPk0YDnM5qU9txaiIhky5tUiVCAwnG0JzK7Z/exec';
+var DISTRICT='';
+var allData=[];
+var filtered=[];
+try{DISTRICT=localStorage.getItem('dist_d')||'';}catch(e){}
+
+function login(){
+  var d=document.getElementById('setupDistrict').value;
+  if(!d){document.getElementById('err').style.display='block';return;}
+  document.getElementById('err').style.display='none';
+  DISTRICT=d;
+  try{localStorage.setItem('dist_d',d);}catch(e){}
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('dashScreen').style.display='block';
+  document.getElementById('dbadge').textContent='📍 '+DISTRICT;
+  document.getElementById('distLabel').textContent=DISTRICT;
+  loadData();
+}
+function logout(){document.getElementById('dashScreen').style.display='none';document.getElementById('setupScreen').style.display='block';allData=[];}
+
+function loadData(){
+  document.getElementById('loadDiv').style.display='block';
+  document.getElementById('mainDiv').style.display='none';
+  var cb='_dcb'+Date.now();
+  window[cb]=function(d){
+    allData=(d.rows||[]).filter(function(r){return r.district===DISTRICT;});
+    initDash();
+  };
+  var s=document.createElement('script');
+  s.src=SCRIPT_URL+'?action=read&district='+encodeURIComponent(DISTRICT)+'&callback='+cb;
+  s.onerror=function(){document.getElementById('loadDiv').innerHTML='<div class="empty">⚠️ Could not load data. Check internet.</div>';};
+  document.head.appendChild(s);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function initDash(){
+  document.getElementById('loadDiv').style.display='none';
+  document.getElementById('mainDiv').style.display='block';
+  // Populate month filter
+  var months=Array.from(new Set(allData.map(function(r){return r.reportMonth;}))).filter(Boolean).sort().reverse();
+  var fm=document.getElementById('fMonth');
+  fm.innerHTML='<option value="">All Months</option>'+months.map(function(m){
+    var l=new Date(m+'-01').toLocaleString('default',{month:'short',year:'numeric'});
+    return '<option value="'+m+'">'+l+'</option>';
+  }).join('');
+  applyFilters();
+}
+
+function applyFilters(){
+  var mF=document.getElementById('fMonth').value;
+  var sF=document.getElementById('fStatus').value;
+  var nF=document.getElementById('fSHG').value.trim().toLowerCase();
+  filtered=allData.filter(function(r){
+    return(!mF||r.reportMonth===mF)&&(!sF||r.status===sF)&&(!nF||r.shgName.toLowerCase().indexOf(nF)>=0);
+  });
+  // Show history panel if searching by SHG name
+  if(nF.length>=2){
+    var matchNames=Array.from(new Set(filtered.map(function(r){return r.shgName;}))).filter(Boolean);
+    if(matchNames.length===1){showHistory(matchNames[0]);}
+    else{document.getElementById('historyPanel').style.display='none';}
+  } else {
+    document.getElementById('historyPanel').style.display='none';
+  }
+  renderKPIs(filtered);
+  renderFlags(filtered);
+  renderTable(filtered);
+}
+
+function showHistory(shgName){
+  var rows=allData.filter(function(r){return r.shgName===shgName;}).sort(function(a,b){return a.reportMonth>b.reportMonth?1:-1;});
+  document.getElementById('historyName').textContent=shgName;
+  document.getElementById('historyMonthCount').textContent=rows.length+' month(s) on record';
+  document.getElementById('historyBody').innerHTML=rows.map(function(r){
+    var comp=(parseFloat(r.compostProduced)||0)+(parseFloat(r.vermiProduced)||0);
+    var ufpct=r.ufTarget>0?(parseFloat(r.ufCollected)/parseFloat(r.ufTarget)*100).toFixed(0)+'%':'—';
+    var ml=r.reportMonth?new Date(r.reportMonth+'-01').toLocaleString('default',{month:'short',year:'numeric'}):r.reportMonth;
+    var dot=r.status==='ok'?'🟢':r.status==='warn'?'🟡':'🔴';
+    return '<div class="history-row">'
+      +'<span class="hm">'+dot+' '+ml+'</span>'
+      +'<div class="hstat">'
+      +'<span>HHs: <strong>'+esc(r.hhCovered||0)+'</strong></span>'
+      +'<span>Trips: <strong>'+esc(r.trips||0)+'</strong></span>'
+      +'<span>Compost: <strong>'+(comp>0?comp.toFixed(1)+' kg':'None')+'</strong></span>'
+      +'<span>User Fee: <strong>₹'+(parseFloat(r.ufAmount)||0).toLocaleString('en-IN')+'</strong></span>'
+      +'<span>UF Recovery: <strong>'+ufpct+'</strong></span>'
+      +(r.issues?'<span style="color:var(--rd)">Issue: <strong>'+esc(r.issues)+'</strong></span>':'')
+      +'</div></div>';
+  }).join('');
+  document.getElementById('historyPanel').style.display='block';
+}
+
+function renderKPIs(data){
+  document.getElementById('k1').textContent=Array.from(new Set(data.map(function(r){return r.shgName;}))).length;
+  document.getElementById('k2').textContent=data.filter(function(r){return r.status==='warn';}).length;
+  document.getElementById('k3').textContent=data.filter(function(r){return r.status==='flag';}).length;
+  var uf=data.reduce(function(s,r){return s+(parseFloat(r.ufAmount)||0);},0);
+  document.getElementById('k4').textContent='₹'+uf.toLocaleString('en-IN');
+}
+
+function renderFlags(data){
+  var flags=data.filter(function(r){return r.status==='flag';});
+  var fb=document.getElementById('flagBox');
+  if(flags.length){
+    fb.style.display='block';
+    document.getElementById('flagList').innerHTML=flags.map(function(r){
+      return '<div class="fi">🚩 <span><strong>'+esc(r.shgName)+'</strong> · '+esc(r.gp)+' · '+esc(r.reportMonth)+' · '+esc(r.reasons)+'</span></div>';
+    }).join('');
+  } else fb.style.display='none';
+}
+
+function renderTable(data){
+  var tb=document.getElementById('tBody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="11"><div class="empty">No records match filters.</div></td></tr>';return;}
+  tb.innerHTML=data.map(function(r){
+    var ufp=r.ufTarget>0?(parseFloat(r.ufCollected)/parseFloat(r.ufTarget)*100).toFixed(0)+'%':'—';
+    var comp=(parseFloat(r.compostProduced)||0)+(parseFloat(r.vermiProduced)||0);
+    var ct=comp>0?comp.toFixed(1)+' kg':'<span style="color:#DC2626;font-weight:700">None</span>';
+    var ml=r.reportMonth?new Date(r.reportMonth+'-01').toLocaleString('default',{month:'short',year:'numeric'}):'—';
+    var b=r.status==='ok'?'<span class="badge ok">✅ OK</span>'
+      :r.status==='warn'?'<span class="badge warn" title="'+esc(r.reasons)+'">⚠ Attention</span>'
+      :'<span class="badge flag" title="'+esc(r.reasons)+'">🚩 Flagged</span>';
+    return '<tr>'
+      +'<td><strong>'+esc(r.shgName||'—')+'</strong><br><small style="color:#9ca3af">'+esc(r.reporterName||'')+'</small></td>'
+      +'<td>'+esc(r.gp||'—')+'<br><small style="color:#9ca3af">'+esc(r.block||'')+'</small></td>'
+      +'<td>'+ml+'</td><td>'+esc(r.hhCovered||0)+'</td><td>'+esc(r.trips||0)+'</td>'
+      +'<td>'+ct+'</td><td>₹'+(parseFloat(r.ufAmount)||0).toLocaleString('en-IN')+'</td>'
+      +'<td>'+ufp+'</td><td>'+(r.shgMeeting==='yes'?'✅':r.shgMeeting==='no'?'❌':'—')+'</td>'
+      +'<td>'+b+'</td>'
+      +'<td><span class="shg-link" onclick="searchSHG(\''+esc(r.shgName)+'\')">View history</span></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function searchSHG(name){
+  document.getElementById('fSHG').value=name;
+  document.getElementById('fMonth').value='';
+  applyFilters();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function clearFilters(){
+  document.getElementById('fMonth').value='';
+  document.getElementById('fStatus').value='';
+  document.getElementById('fSHG').value='';
+  document.getElementById('historyPanel').style.display='none';
+  applyFilters();
+}
+
+function exportCSV(){
+  if(!filtered.length){alert('No data to export.');return;}
+  var h=['SHG/NGO','GP','Block','District','Month','Reporter','Mobile','HHs','Trips',
+    'Wet(kg)','Dry(kg)','DryMCF(kg)','Compost(kg)','Vermi(kg)','CompSold(kg)',
+    'CompRev(Rs)','RecycleRev(Rs)','UFTarget','UFCollected','UFAmount(Rs)',
+    'Meeting','Issues','Support','Status','Reasons'];
+  var rows=filtered.map(function(r){
+    return[r.shgName,r.gp,r.block,r.district,r.reportMonth,r.reporterName,r.mobile,
+      r.hhCovered,r.trips,r.wetWaste,r.dryWaste,r.dryToMcf,r.compostProduced,r.vermiProduced,
+      r.compostSold,r.compostRevenue,r.recycleRevenue,r.ufTarget,r.ufCollected,r.ufAmount,
+      r.shgMeeting,r.issues,r.support,r.status,r.reasons
+    ].map(function(v){return'"'+String(v||'').replace(/"/g,'""')+'"';}).join(',');
+  });
+  var csv=[h.join(',')].concat(rows).join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='SLWM_'+DISTRICT.replace(/\s/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+if(DISTRICT){login();}
+</script>
+</body>
+</html>
