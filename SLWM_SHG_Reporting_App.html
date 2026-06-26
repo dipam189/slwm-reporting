@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBM-G SLWM — Monthly Report</title>
+<style>
+:root{
+  --gd:#1B4332;--gm:#2D6A4F;--gl:#40916C;--gp:#D8F3DC;--gf:#f0faf3;
+  --am:#F59E0B;--rd:#DC2626;--rl:#FEE2E2;--al:#FEF3C7;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g600:#4b5563;--g800:#1f2937;
+  --fh:Georgia,serif;--fb:Calibri,'Segoe UI',sans-serif;--r:8px;--sh:0 2px 8px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fb);background:var(--g100);color:var(--g800);min-height:100vh;}
+.topbar{background:var(--gd);color:#fff;padding:0 20px;display:flex;align-items:center;
+  justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;gap:10px;}
+.topbar-title{font-family:var(--fh);font-size:15px;}
+.topbar-sub{font-size:11px;opacity:.7;margin-top:2px;}
+.panel{padding:20px;max-width:860px;margin:0 auto;}
+.form-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;}
+.fc-head{background:var(--gm);color:#fff;padding:11px 18px;font-family:var(--fh);font-size:14px;display:flex;align-items:center;gap:8px;}
+.fc-body{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fc-body.g3{grid-template-columns:1fr 1fr 1fr;}
+.fc-body.full{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.s2{grid-column:span 2;}
+.field.s3{grid-column:span 3;}
+label{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;}
+.ln{font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400);margin-left:4px;}
+input,select,textarea{border:1.5px solid var(--g200);border-radius:6px;padding:9px 12px;
+  font-family:var(--fb);font-size:14px;color:var(--g800);background:var(--g50);transition:border .15s;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gl);background:#fff;}
+textarea{resize:vertical;min-height:65px;}
+.ui{position:relative;}
+.ui input{padding-right:44px;}
+.ut{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--g400);font-weight:700;}
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:12px 16px 16px;}
+.sched-day{display:flex;flex-direction:column;gap:4px;}
+.sched-day label{font-size:11px;font-weight:700;color:var(--gm);text-align:center;
+  background:var(--gf);border-radius:4px;padding:4px 2px;text-transform:uppercase;letter-spacing:.3px;}
+.sched-day textarea{font-size:12px;min-height:88px;padding:6px;border-color:var(--g200);}
+.sched-note{font-size:12px;color:var(--g600);padding:0 16px 10px;font-style:italic;}
+.submit-row{display:flex;justify-content:flex-end;padding:0 16px 16px;gap:10px;align-items:center;flex-wrap:wrap;}
+.btn-p{background:var(--gm);color:#fff;border:none;padding:11px 32px;border-radius:6px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:var(--fb);}
+.btn-p:hover{background:var(--gd);}
+.btn-p:disabled{background:var(--g400);cursor:not-allowed;}
+.btn-s{background:#fff;color:var(--gm);border:1.5px solid var(--gm);padding:11px 20px;
+  border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}
+.sync-pill{font-size:12px;padding:5px 14px;border-radius:20px;background:var(--gf);
+  color:var(--gm);border:1px solid var(--gp);}
+.sync-pill.sending{background:var(--al);color:#92400e;border-color:var(--am);}
+.sync-pill.done{background:var(--gp);color:var(--gd);border-color:var(--gl);}
+.sync-pill.err{background:var(--rl);color:var(--rd);border-color:var(--rd);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--gd);color:#fff;
+  padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+@media(max-width:620px){
+  .fc-body,.fc-body.g3{grid-template-columns:1fr;}
+  .field.s2,.field.s3{grid-column:span 1;}
+  .sched-grid{grid-template-columns:repeat(2,1fr);}
+  .panel{padding:12px;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <div class="topbar-title">SBM-G SLWM Monthly Reporting</div>
+    <div class="topbar-sub">SPMU · PHED · Government of Assam</div>
+  </div>
+</div>
+
+<div class="panel">
+
+  <div class="form-card">
+    <div class="fc-head">🏷 SHG / NGO Identity</div>
+    <div class="fc-body g3">
+      <div class="field s3">
+        <label>SHG / NGO <span class="ln">Write the full name of your SHG or NGO below</span></label>
+        <input type="text" id="shgName" placeholder="e.g. Nabajowar Mahila SHG" oninput="saveId()">
+      </div>
+      <div class="field">
+        <label>District</label>
+        <select id="district" onchange="saveId()">
+          <option value="">-- Select --</option>
+          <option>Baksa</option><option>Barpeta</option><option>Biswanath</option>
+          <option>Bongaigaon</option><option>Cachar</option><option>Charaideo</option>
+          <option>Chirang</option><option>Darrang</option><option>Dhemaji</option>
+          <option>Dhubri</option><option>Dibrugarh</option><option>Dima Hasao</option>
+          <option>Goalpara</option><option>Golaghat</option><option>Hailakandi</option>
+          <option>Hojai</option><option>Jorhat</option><option>Kamrup (M)</option>
+          <option>Kamrup (R)</option><option>Karbi Anglong</option><option>Karimganj</option>
+          <option>Kokrajhar</option><option>Lakhimpur</option><option>Majuli</option>
+          <option>Morigaon</option><option>Nagaon</option><option>Nalbari</option>
+          <option>Sivasagar</option><option>Sonitpur</option><option>South Salmara-Mankachar</option>
+          <option>Tinsukia</option><option>Udalguri</option><option>West Karbi Anglong</option>
+          <option>Bajali</option><option>Tamulpur</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Development Block</label>
+        <input type="text" id="block" placeholder="e.g. Goraimari" oninput="saveId()">
+      </div>
+      <div class="field">
+        <label>Gaon Panchayat</label>
+        <input type="text" id="gp" placeholder="e.g. Borigaon GP" oninput="saveId()">
+      </div>
+      <div class="field">
+        <label>Functional Since <span class="ln">date SLWM work started</span></label>
+        <input type="date" id="funcSince" onchange="saveId()">
+      </div>
+      <div class="field">
+        <label>Mobile <span class="ln">optional</span></label>
+        <input type="tel" id="mobile" placeholder="10-digit" maxlength="10" oninput="saveId()">
+      </div>
+      <div class="field">
+        <label>Reporting Member Name</label>
+        <input type="text" id="reporterName" placeholder="Full name" oninput="saveId()">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="fc-head">📅 Monthly Details</div>
+    <div class="fc-body">
+      <div class="field">
+        <label>Reporting Month</label>
+        <input type="month" id="reportMonth">
+      </div>
+      <div class="field">
+        <label>Total Households Covered</label>
+        <div class="ui"><input type="number" id="hhCovered" min="0" placeholder="0"><span class="ut">HHs</span></div>
+      </div>
+      <div class="field">
+        <label>Total Collection Trips</label>
+        <div class="ui"><input type="number" id="trips" min="0" placeholder="0"><span class="ut">trips</span></div>
+      </div>
+      <div class="field">
+        <label>Wet / Organic Waste Collected</label>
+        <div class="ui"><input type="number" id="wetWaste" min="0" placeholder="0" step="0.1"><span class="ut">kg</span></div>
+      </div>
+      <div class="field">
+        <label>Dry Waste Collected</label>
+        <div class="ui"><input type="number" id="dryWaste" min="0" placeholder="0" step="0.1"><span class="ut">kg</span></div>
+      </div>
+      <div class="field">
+        <label>Dry Waste Sent to MCF / PWMU</label>
+        <div class="ui"><input type="number" id="dryToMcf" min="0" placeholder="0" step="0.1"><span class="ut">kg</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="fc-head">🗓 Village-wise Collection Schedule</div>
+    <div class="sched-note">Enter village / area names covered on each day</div>
+    <div class="sched-grid">
+      <div class="sched-day"><label>Monday</label><textarea id="sched_mon" placeholder="Villages..."></textarea></div>
+      <div class="sched-day"><label>Tuesday</label><textarea id="sched_tue" placeholder="Villages..."></textarea></div>
+      <div class="sched-day"><label>Wednesday</label><textarea id="sched_wed" placeholder="Villages..."></textarea></div>
+      <div class="sched-day"><label>Thursday</label><textarea id="sched_thu" placeholder="Villages..."></textarea></div>
+      <div class="sched-day"><label>Friday</label><textarea id="sched_fri" placeholder="Villages..."></textarea></div>
+      <div class="sched-day"><label>Saturday</label><textarea id="sched_sat" placeholder="Villages..."></textarea></div>
+      <div class="sched-day"><label>Sunday</label><textarea id="sched_sun" placeholder="Rest / coverage"></textarea></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="fc-head">🌿 Composting &amp; Processing</div>
+    <div class="fc-body">
+      <div class="field">
+        <label>Compost Produced</label>
+        <div class="ui"><input type="number" id="compostProduced" min="0" placeholder="0" step="0.1"><span class="ut">kg</span></div>
+      </div>
+      <div class="field">
+        <label>Vermicompost Produced</label>
+        <div class="ui"><input type="number" id="vermiProduced" min="0" placeholder="0" step="0.1"><span class="ut">kg</span></div>
+      </div>
+      <div class="field">
+        <label>Compost / Vermicompost Sold</label>
+        <div class="ui"><input type="number" id="compostSold" min="0" placeholder="0" step="0.1"><span class="ut">kg</span></div>
+      </div>
+      <div class="field">
+        <label>Revenue from Compost Sale</label>
+        <div class="ui"><input type="number" id="compostRevenue" min="0" placeholder="0"><span class="ut">₹</span></div>
+      </div>
+      <div class="field">
+        <label>Revenue from Recyclable Sale</label>
+        <div class="ui"><input type="number" id="recycleRevenue" min="0" placeholder="0"><span class="ut">₹</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="fc-head">💰 User Fee Collection</div>
+    <div class="fc-body">
+      <div class="field">
+        <label>Target HHs for User Fee</label>
+        <div class="ui"><input type="number" id="ufTarget" min="0" placeholder="0"><span class="ut">HHs</span></div>
+      </div>
+      <div class="field">
+        <label>HHs from whom Fee Collected</label>
+        <div class="ui"><input type="number" id="ufCollected" min="0" placeholder="0"><span class="ut">HHs</span></div>
+      </div>
+      <div class="field">
+        <label>Total User Fee Collected</label>
+        <div class="ui"><input type="number" id="ufAmount" min="0" placeholder="0"><span class="ut">₹</span></div>
+      </div>
+      <div class="field">
+        <label>SHG Monthly Meeting Held?</label>
+        <select id="shgMeeting">
+          <option value="">-- Select --</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="fc-head">📝 Issues &amp; Support Needed</div>
+    <div class="fc-body full">
+      <div class="field">
+        <label>Key Issues / Challenges This Month</label>
+        <textarea id="issues" placeholder="Equipment problems, community issues, road access etc."></textarea>
+      </div>
+      <div class="field">
+        <label>Support Required from Block / District / SPMU</label>
+        <textarea id="support" placeholder="e.g. E-cart repair, compost bins, training" style="min-height:52px;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="submit-row">
+    <span class="sync-pill" id="syncPill">Ready to submit</span>
+    <button class="btn-s" onclick="clearMonthly()">Clear</button>
+    <button class="btn-p" id="submitBtn" onclick="submitReport()">✓ Submit Report</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1BJNga2na0tk_H3zFZJ68Gg4TX009fPk0YDnM5qU9txaiIhky5tUiVCAwnG0JzK7Z/exec';
+var reports = [];
+try { reports = JSON.parse(localStorage.getItem('slwm_v2')||'[]'); } catch(e){}
+
+window.onload = function() {
+  loadId();
+  var now = new Date();
+  document.getElementById('reportMonth').value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+};
+
+function saveId() {
+  try { localStorage.setItem('slwm_id', JSON.stringify({
+    shgName:v('shgName'),district:v('district'),block:v('block'),gp:v('gp'),
+    funcSince:v('funcSince'),mobile:v('mobile'),reporterName:v('reporterName')
+  })); } catch(e){}
+}
+function loadId() {
+  try {
+    var id = JSON.parse(localStorage.getItem('slwm_id')||'{}');
+    ['shgName','district','block','gp','funcSince','mobile','reporterName'].forEach(function(k){
+      if(id[k]){ var el=document.getElementById(k); if(el) el.value=id[k]; }
+    });
+  } catch(e){}
+}
+
+function v(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function n(id){ return parseFloat(document.getElementById(id).value)||0; }
+
+function getStatus(r) {
+  var ufPct = r.ufTarget>0?(r.ufCollected/r.ufTarget*100):100;
+  var noComp = (r.compostProduced+r.vermiProduced)===0;
+  if((noComp&&ufPct<40)||r.trips<4) return 'flag';
+  if(noComp||ufPct<70||r.shgMeeting==='no') return 'warn';
+  return 'ok';
+}
+function getReasons(r) {
+  var out=[];
+  var ufPct=r.ufTarget>0?(r.ufCollected/r.ufTarget*100):100;
+  if(r.trips<4) out.push('Trips < 4');
+  if((r.compostProduced+r.vermiProduced)===0) out.push('Zero compost');
+  if(ufPct<40) out.push('UF recovery < 40%');
+  if(r.shgMeeting==='no') out.push('Meeting not held');
+  return out.length?out.join('; '):'All indicators satisfactory';
+}
+
+function toast(msg,dur){ var el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},dur||3200); }
+function pill(msg,cls){ var el=document.getElementById('syncPill'); el.textContent=msg; el.className='sync-pill'+(cls?' '+cls:''); }
+
+function submitReport() {
+  if(!v('shgName')||!v('district')||!v('gp')||!v('reportMonth')){
+    toast('⚠ Please fill SHG Name, District, GP and Reporting Month.'); return;
+  }
+  var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Submitting...';
+  var r={
+    id:Date.now(), shgName:v('shgName'),district:v('district'),block:v('block'),gp:v('gp'),
+    funcSince:v('funcSince'),reporterName:v('reporterName'),mobile:v('mobile'),reportMonth:v('reportMonth'),
+    hhCovered:n('hhCovered'),trips:n('trips'),wetWaste:n('wetWaste'),dryWaste:n('dryWaste'),dryToMcf:n('dryToMcf'),
+    sched_mon:v('sched_mon'),sched_tue:v('sched_tue'),sched_wed:v('sched_wed'),sched_thu:v('sched_thu'),
+    sched_fri:v('sched_fri'),sched_sat:v('sched_sat'),sched_sun:v('sched_sun'),
+    compostProduced:n('compostProduced'),vermiProduced:n('vermiProduced'),
+    compostSold:n('compostSold'),compostRevenue:n('compostRevenue'),recycleRevenue:n('recycleRevenue'),
+    ufTarget:n('ufTarget'),ufCollected:n('ufCollected'),ufAmount:n('ufAmount'),
+    shgMeeting:v('shgMeeting'),issues:v('issues'),support:v('support')
+  };
+  r.status=getStatus(r); r.reasons=getReasons(r);
+  reports.unshift(r);
+  try{ localStorage.setItem('slwm_v2',JSON.stringify(reports)); }catch(e){}
+  pill('⏳ Sending to server...','sending');
+  var params = Object.keys(r).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(r[k]||''); }).join('&');
+  var url = SCRIPT_URL+'?action=submit&'+params;
+  var cbName = '_cb'+Date.now();
+  window[cbName] = function(data){
+    btn.disabled=false; btn.textContent='✓ Submit Report';
+    if(data&&data.success){ pill('✅ Saved to Google Sheet','done'); toast('✅ Report submitted successfully!'); }
+    else { pill('⚠ Saved locally only','err'); toast('Saved on device. Will retry next time.'); }
+    clearMonthly();
+  };
+  var s=document.createElement('script');
+  s.src=url+'&callback='+cbName;
+  s.onerror=function(){ btn.disabled=false; btn.textContent='✓ Submit Report'; pill('⚠ Saved locally only','err'); toast('Saved on device. Check internet connection.'); clearMonthly(); };
+  document.head.appendChild(s);
+}
+
+function clearMonthly(){
+  ['reportMonth','hhCovered','trips','wetWaste','dryWaste','dryToMcf',
+   'sched_mon','sched_tue','sched_wed','sched_thu','sched_fri','sched_sat','sched_sun',
+   'compostProduced','vermiProduced','compostSold','compostRevenue','recycleRevenue',
+   'ufTarget','ufCollected','ufAmount','shgMeeting','issues','support'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  var now=new Date();
+  document.getElementById('reportMonth').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  pill('Ready to submit','');
+}
+</script>
+</body>
+</html>
