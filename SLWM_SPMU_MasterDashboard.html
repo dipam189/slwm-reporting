@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBM-G SLWM — SPMU Master Dashboard</title>
+<style>
+:root{
+  --gd:#1B4332;--gm:#2D6A4F;--gl:#40916C;--gp:#D8F3DC;--gf:#f0faf3;
+  --am:#F59E0B;--rd:#DC2626;--rl:#FEE2E2;--al:#FEF3C7;--bl:#1e40af;--bll:#dbeafe;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g600:#4b5563;--g800:#1f2937;
+  --fh:Georgia,serif;--fb:Calibri,'Segoe UI',sans-serif;--r:8px;--sh:0 2px 8px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fb);background:var(--g100);color:var(--g800);min-height:100vh;}
+.topbar{background:var(--gd);color:#fff;padding:0 20px;display:flex;align-items:center;
+  justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;gap:10px;}
+.topbar-title{font-family:var(--fh);font-size:15px;}
+.topbar-sub{font-size:11px;opacity:.7;margin-top:2px;}
+/* Login */
+.login-wrap{max-width:400px;margin:70px auto;background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;}
+.login-head{background:var(--gd);color:#fff;padding:18px 22px;font-family:var(--fh);font-size:15px;}
+.login-body{padding:24px;display:flex;flex-direction:column;gap:14px;}
+label{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;}
+input{border:1.5px solid var(--g200);border-radius:6px;padding:10px 13px;
+  font-family:var(--fb);font-size:14px;color:var(--g800);background:var(--g50);width:100%;}
+input:focus{outline:none;border-color:var(--gl);background:#fff;}
+.btn-p{background:var(--gd);color:#fff;border:none;padding:12px;border-radius:6px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:var(--fb);width:100%;}
+.btn-p:hover{background:var(--gm);}
+.errmsg{color:var(--rd);font-size:13px;display:none;}
+/* Dashboard */
+.panel{padding:20px;max-width:1200px;margin:0 auto;}
+.top-ctrl{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-wrap:wrap;}
+.top-ctrl select{font-size:13px;padding:7px 12px;border:1.5px solid var(--g200);border-radius:6px;background:#fff;font-family:var(--fb);}
+.rbtn{background:var(--gf);color:var(--gm);border:1.5px solid var(--gp);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;}
+.rbtn:hover{background:var(--gp);}
+.exp-btn{background:var(--gf);color:var(--gm);border:1.5px solid var(--gp);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;}
+.exp-btn:hover{background:var(--gp);}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:#fff;border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh);border-left:4px solid var(--gl);}
+.kpi.w{border-left-color:var(--am);}
+.kpi.f{border-left-color:var(--rd);}
+.kpi.b{border-left-color:var(--bl);}
+.kv{font-family:var(--fh);font-size:22px;font-weight:700;color:var(--gd);line-height:1;}
+.kpi.w .kv{color:#92400e;}
+.kpi.f .kv{color:var(--rd);}
+.kpi.b .kv{color:var(--bl);}
+.kl{font-size:11px;color:var(--g600);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;}
+.tab{background:#fff;border:1.5px solid var(--g200);color:var(--g600);padding:7px 16px;
+  border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--fb);}
+.tab.active{background:var(--gd);color:#fff;border-color:var(--gd);}
+.tc{display:none;}
+.tc.active{display:block;}
+/* Bar chart */
+.bar-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:18px;}
+.bar-card h3{font-family:var(--fh);color:var(--gd);font-size:14px;margin-bottom:12px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+.bar-lbl{width:150px;text-align:right;color:var(--g600);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;background:var(--g100);border-radius:4px;height:16px;}
+.bar-fill{height:100%;border-radius:4px;background:var(--gl);transition:width .4s;}
+.bar-fill.w{background:var(--am);}
+.bar-fill.f{background:var(--rd);}
+.bar-num{width:70px;font-weight:700;color:var(--g800);font-size:12px;}
+/* District cards */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px;}
+.dcard{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;cursor:pointer;transition:box-shadow .2s;}
+.dcard:hover{box-shadow:0 4px 16px rgba(0,0,0,.12);}
+.dcard-head{background:var(--gm);color:#fff;padding:9px 13px;font-family:var(--fh);font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+.dcard.f .dcard-head{background:var(--rd);}
+.dcard.w .dcard-head{background:#92400e;}
+.dcard.nd .dcard-head{background:var(--g400);}
+.dcard-body{padding:10px 13px;}
+.ds{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--g100);}
+.ds:last-child{border:none;}
+.ds .l{color:var(--g600);}
+.ds .v{font-weight:700;}
+/* Flag box */
+.flag-box{background:var(--rl);border:1.5px solid var(--rd);border-radius:var(--r);padding:14px 18px;margin-bottom:18px;}
+.flag-box h3{color:var(--rd);font-family:var(--fh);font-size:13px;margin-bottom:8px;}
+.fi{font-size:13px;padding:5px 0;border-bottom:1px solid rgba(220,38,38,.15);display:flex;gap:8px;}
+.fi:last-child{border:none;}
+/* Not reporting */
+.nr-box{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px;}
+.nr-box h3{font-size:13px;font-weight:700;color:var(--g600);margin-bottom:10px;}
+.tags{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{background:var(--g100);border:1px solid var(--g200);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--g600);}
+/* Table */
+.tw{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;overflow-x:auto;margin-bottom:20px;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+thead th{background:var(--gd);color:#fff;padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--g100);}
+tbody tr:hover{background:var(--g50);}
+tbody td{padding:8px 12px;vertical-align:top;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge.ok{background:var(--gp);color:var(--gd);}
+.badge.warn{background:var(--al);color:#92400e;}
+.badge.flag{background:var(--rl);color:var(--rd);}
+.ctrl{display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap;}
+.ctrl select{max-width:200px;font-size:13px;padding:7px 10px;border:1.5px solid var(--g200);border-radius:6px;font-family:var(--fb);}
+.flbl{font-size:12px;color:var(--g600);font-weight:700;}
+.loading{text-align:center;padding:60px;color:var(--g400);}
+.spin{display:inline-block;font-size:30px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr;}.panel{padding:12px;}}
+@media print{.topbar,.tabs,.top-ctrl,.ctrl,.exp-btn,.rbtn{display:none!important;}.tc{display:block!important;}body{background:#fff;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+<div class="topbar"><div><div class="topbar-title">SBM-G SLWM — SPMU Master Dashboard</div><div class="topbar-sub">SPMU · PHED · Government of Assam</div></div></div>
+<div style="padding:24px;">
+<div class="login-wrap">
+  <div class="login-head">🏛 SPMU Access</div>
+  <div class="login-body">
+    <div>
+      <label>Access Code</label>
+      <input type="password" id="codeInput" placeholder="Enter access code" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
+      <div style="font-size:11px;color:var(--g400);margin-top:5px;">Contact SPMU for access code</div>
+    </div>
+    <button class="btn-p" onclick="login()">Open Master Dashboard →</button>
+    <div class="errmsg" id="loginErr">Incorrect access code. Please try again.</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashScreen" style="display:none;">
+<div class="topbar">
+  <div><div class="topbar-title">SBM-G SLWM — SPMU Master Dashboard</div><div class="topbar-sub">All 35 Districts · PHED · Govt. of Assam</div></div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="rbtn" onclick="loadData()">🔄 Refresh</button>
+    <button class="rbtn" onclick="logout()" style="color:var(--rd);border-color:var(--rd);">Sign Out</button>
+  </div>
+</div>
+<div class="panel">
+  <div id="loadDiv" class="loading"><span class="spin">⏳</span><br>Loading all district data...</div>
+  <div id="mainDiv" style="display:none;">
+
+    <div class="top-ctrl">
+      <span class="flbl">Month:</span>
+      <select id="gMonth" onchange="applyFilter()"><option value="">All Months (cumulative)</option></select>
+      <button class="exp-btn" onclick="exportAll()">⬇ Export All CSV</button>
+      <button class="exp-btn" onclick="window.print()">🖨 Print</button>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv" id="K1">0</div><div class="kl">Total Reports</div></div>
+      <div class="kpi b"><div class="kv" id="K2">0/35</div><div class="kl">Districts Reporting</div></div>
+      <div class="kpi w"><div class="kv" id="K3">0</div><div class="kl">⚠ Needs Attention</div></div>
+      <div class="kpi f"><div class="kv" id="K4">0</div><div class="kl">🚩 Flagged</div></div>
+      <div class="kpi"><div class="kv" id="K5">₹0</div><div class="kl">Total User Fee</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview',this)">📊 District Overview</button>
+      <button class="tab" onclick="switchTab('flags',this)">🚩 All Flags</button>
+      <button class="tab" onclick="switchTab('records',this)">📋 All Records</button>
+      <button class="tab" onclick="switchTab('gaps',this)">⚠ Reporting Gaps</button>
+    </div>
+
+    <div class="tc active" id="tc-overview">
+      <div class="bar-card"><h3>SHG Reports per District</h3><div id="barChart"></div></div>
+      <div class="dgrid" id="dgrid"></div>
+    </div>
+
+    <div class="tc" id="tc-flags">
+      <div class="flag-box"><h3>🚩 All Flagged SHGs</h3><div id="flagList"></div></div>
+    </div>
+
+    <div class="tc" id="tc-records">
+      <div class="ctrl" style="gap:10px;flex-wrap:wrap;">
+        <span class="flbl">Filter:</span>
+        <select id="fDist" onchange="renderTable()" style="max-width:180px;font-size:13px;padding:7px 10px;border:1.5px solid var(--g200);border-radius:6px;font-family:var(--fb);"><option value="">All Districts</option></select>
+        <select id="fStat" onchange="renderTable()" style="max-width:140px;font-size:13px;padding:7px 10px;border:1.5px solid var(--g200);border-radius:6px;font-family:var(--fb);">
+          <option value="">All Status</option>
+          <option value="ok">✅ OK</option><option value="warn">⚠</option><option value="flag">🚩</option>
+        </select>
+        <input type="text" id="fSHGName" placeholder="🔍 Search SHG / NGO name..." oninput="renderTable()" style="min-width:220px;font-size:13px;padding:7px 10px;border:1.5px solid var(--g200);border-radius:6px;font-family:var(--fb);">
+        <button onclick="clearRecordFilters()" style="background:var(--g100);border:1.5px solid var(--g200);color:var(--g600);padding:7px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✕ Clear</button>
+      </div>
+      <!-- SHG History (shown when one SHG name matched) -->
+      <div id="spmuHistory" style="display:none;background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;">
+        <div style="background:var(--gm);color:#fff;padding:10px 16px;font-family:var(--fh);font-size:13px;display:flex;justify-content:space-between;">
+          <span>📈 Full History — <span id="spmuHistName"></span></span>
+          <span id="spmuHistCount" style="font-size:12px;opacity:.8;"></span>
+        </div>
+        <div style="padding:14px 16px;" id="spmuHistBody"></div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>SHG/NGO</th><th>GP/Block</th><th>District</th><th>Month</th><th>HHs</th><th>Trips</th><th>Compost(kg)</th><th>UF(₹)</th><th>UF%</th><th>Mtg</th><th>Status</th></tr></thead>
+        <tbody id="allTB"></tbody>
+      </table></div>
+    </div>
+
+    <div class="tc" id="tc-gaps">
+      <div class="nr-box"><h3>Districts with NO reports this month <span style="font-size:11px;color:var(--g400);">(select a month above)</span></h3><div class="tags" id="noRepList"></div></div>
+      <div class="nr-box"><h3>Districts with fewer than 3 reports this month</h3><div class="tags" id="lowRepList"></div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbx1BJNga2na0tk_H3zFZJ68Gg4TX009fPk0YDnM5qU9txaiIhky5tUiVCAwnG0JzK7Z/exec';
+var SPMU_CODE='SPMU2025';
+var allData=[];
+var fd=[];
+var ALL_D=['Baksa','Barpeta','Biswanath','Bongaigaon','Cachar','Charaideo','Chirang',
+  'Darrang','Dhemaji','Dhubri','Dibrugarh','Dima Hasao','Goalpara','Golaghat','Hailakandi',
+  'Hojai','Jorhat','Kamrup (M)','Kamrup (R)','Karbi Anglong','Karimganj','Kokrajhar',
+  'Lakhimpur','Majuli','Morigaon','Nagaon','Nalbari','Sivasagar','Sonitpur',
+  'South Salmara-Mankachar','Tinsukia','Udalguri','West Karbi Anglong','Bajali','Tamulpur'];
+
+function login(){
+  var c=document.getElementById('codeInput').value.trim();
+  var err=document.getElementById('loginErr');
+  if(c!==SPMU_CODE){err.style.display='block';return;}
+  err.style.display='none';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dashScreen').style.display='block';
+  loadData();
+}
+function logout(){document.getElementById('dashScreen').style.display='none';document.getElementById('loginScreen').style.display='block';allData=[];fd=[];}
+
+function loadData(){
+  document.getElementById('loadDiv').style.display='block';
+  document.getElementById('mainDiv').style.display='none';
+  var cb='_scb'+Date.now();
+  window[cb]=function(d){allData=d.rows||[];initDash();};
+  var s=document.createElement('script');
+  s.src=SCRIPT_URL+'?action=readAll&callback='+cb;
+  s.onerror=function(){document.getElementById('loadDiv').innerHTML='<div style="text-align:center;padding:60px;color:#9ca3af;">⚠️ Could not load data. Check internet connection.</div>';};
+  document.head.appendChild(s);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function initDash(){
+  document.getElementById('loadDiv').style.display='none';
+  document.getElementById('mainDiv').style.display='block';
+  var months=Array.from(new Set(allData.map(function(r){return r.reportMonth;}))).filter(Boolean).sort().reverse();
+  var gm=document.getElementById('gMonth'); var cm=gm.value;
+  gm.innerHTML='<option value="">All Months (cumulative)</option>'+months.map(function(m){var l=new Date(m+'-01').toLocaleString('default',{month:'short',year:'numeric'});return '<option value="'+m+'"'+(m===cm?' selected':'')+'>'+l+'</option>';}).join('');
+  var dists=Array.from(new Set(allData.map(function(r){return r.district;}))).filter(Boolean).sort();
+  var fd2=document.getElementById('fDist');
+  fd2.innerHTML='<option value="">All Districts</option>'+dists.map(function(d){return '<option value="'+d+'">'+d+'</option>';}).join('');
+  applyFilter();
+}
+
+function applyFilter(){
+  var mF=document.getElementById('gMonth').value;
+  fd=mF?allData.filter(function(r){return r.reportMonth===mF;}):allData;
+  renderAll();
+}
+
+function renderAll(){
+  document.getElementById('K1').textContent=fd.length;
+  var rDist=new Set(fd.map(function(r){return r.district;}));
+  document.getElementById('K2').textContent=rDist.size+'/35';
+  document.getElementById('K3').textContent=fd.filter(function(r){return r.status==='warn';}).length;
+  document.getElementById('K4').textContent=fd.filter(function(r){return r.status==='flag';}).length;
+  var uf=fd.reduce(function(s,r){return s+(parseFloat(r.ufAmount)||0);},0);
+  document.getElementById('K5').textContent='₹'+uf.toLocaleString('en-IN');
+  renderOverview();renderFlags();renderTable();renderGaps();
+}
+
+function renderOverview(){
+  var cnt={};ALL_D.forEach(function(d){cnt[d]=0;});
+  fd.forEach(function(r){if(r.district)cnt[r.district]=(cnt[r.district]||0)+1;});
+  var max=Math.max.apply(null,Object.values(cnt).concat([1]));
+  var sorted=Object.entries(cnt).filter(function(e){return e[1]>0;}).sort(function(a,b){return b[1]-a[1];});
+  document.getElementById('barChart').innerHTML=sorted.map(function(e){
+    var flg=fd.filter(function(r){return r.district===e[0]&&r.status==='flag';}).length;
+    var wrn=fd.filter(function(r){return r.district===e[0]&&r.status==='warn';}).length;
+    var cls=flg>0?'f':wrn>0?'w':'';
+    return '<div class="bar-row"><div class="bar-lbl" title="'+e[0]+'">'+e[0]+'</div><div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+(e[1]/max*100).toFixed(0)+'%"></div></div><div class="bar-num">'+e[1]+(flg>0?' 🚩':'')+'</div></div>';
+  }).join('')||'<div style="color:var(--g400);font-size:13px;">No data for selected period.</div>';
+  var byD={};
+  fd.forEach(function(r){if(!r.district)return;if(!byD[r.district])byD[r.district]=[];byD[r.district].push(r);});
+  document.getElementById('dgrid').innerHTML=Object.entries(byD).sort(function(a,b){
+    return b[1].filter(function(r){return r.status==='flag';}).length-a[1].filter(function(r){return r.status==='flag';}).length;
+  }).map(function(e){
+    var d=e[0];var rows=e[1];
+    var flg=rows.filter(function(r){return r.status==='flag';}).length;
+    var wrn=rows.filter(function(r){return r.status==='warn';}).length;
+    var uf=rows.reduce(function(s,r){return s+(parseFloat(r.ufAmount)||0);},0);
+    var comp=rows.reduce(function(s,r){return s+(parseFloat(r.compostProduced)||0)+(parseFloat(r.vermiProduced)||0);},0);
+    var cls=flg>0?'f':wrn>0?'w':'';
+    return '<div class="dcard '+cls+'" onclick="drillDist(\''+d+'\')">'
+      +'<div class="dcard-head"><span>📍 '+d+'</span>'+(flg>0?'<span>🚩 '+flg+'</span>':wrn>0?'<span>⚠ '+wrn+'</span>':'<span>✅</span>')+'</div>'
+      +'<div class="dcard-body">'
+      +'<div class="ds"><span class="l">SHGs reporting</span><span class="v">'+rows.length+'</span></div>'
+      +'<div class="ds"><span class="l">User fee</span><span class="v">₹'+uf.toLocaleString('en-IN')+'</span></div>'
+      +'<div class="ds"><span class="l">Compost</span><span class="v">'+comp.toFixed(0)+' kg</span></div>'
+      +'<div class="ds"><span class="l">Flagged / Attention</span><span class="v">'+(flg>0?'<span style="color:#DC2626">'+flg+'🚩</span>':0)+' / '+(wrn>0?'<span style="color:#92400e">'+wrn+'⚠</span>':0)+'</span></div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function drillDist(d){document.getElementById('fDist').value=d;switchTab('records',document.querySelectorAll('.tab')[2]);renderTable();}
+
+function renderFlags(){
+  var flags=fd.filter(function(r){return r.status==='flag';});
+  document.getElementById('flagList').innerHTML=flags.length
+    ?flags.map(function(r){return '<div class="fi">🚩 <span><strong>'+esc(r.shgName)+'</strong> · '+esc(r.district)+' · '+esc(r.gp)+' · '+esc(r.reportMonth)+' · <em>'+esc(r.reasons)+'</em></span></div>';}).join('')
+    :'<div style="color:var(--gm);font-weight:700;">✅ No flagged SHGs for this period.</div>';
+}
+
+function clearRecordFilters(){
+  document.getElementById('fDist').value='';
+  document.getElementById('fStat').value='';
+  document.getElementById('fSHGName').value='';
+  document.getElementById('spmuHistory').style.display='none';
+  renderTable();
+}
+function renderTable(){
+  var dF=document.getElementById('fDist').value;
+  var sF=document.getElementById('fStat').value;
+  var nF=(document.getElementById('fSHGName')||{value:''}).value.trim().toLowerCase();
+  var f=fd.filter(function(r){return(!dF||r.district===dF)&&(!sF||r.status===sF)&&(!nF||r.shgName.toLowerCase().indexOf(nF)>=0);});
+  // Show history if exactly one SHG name matched
+  if(nF.length>=2){
+    var names=Array.from(new Set(f.map(function(r){return r.shgName;}))).filter(Boolean);
+    if(names.length===1){
+      var hist=allData.filter(function(r){return r.shgName===names[0];}).sort(function(a,b){return a.reportMonth>b.reportMonth?1:-1;});
+      document.getElementById('spmuHistName').textContent=names[0];
+      document.getElementById('spmuHistCount').textContent=hist.length+' month(s) on record';
+      document.getElementById('spmuHistBody').innerHTML=hist.map(function(r){
+        var comp=(parseFloat(r.compostProduced)||0)+(parseFloat(r.vermiProduced)||0);
+        var ufp=r.ufTarget>0?(parseFloat(r.ufCollected)/parseFloat(r.ufTarget)*100).toFixed(0)+'%':'—';
+        var ml=r.reportMonth?new Date(r.reportMonth+'-01').toLocaleString('default',{month:'short',year:'numeric'}):r.reportMonth;
+        var dot=r.status==='ok'?'🟢':r.status==='warn'?'🟡':'🔴';
+        return '<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--g100);font-size:13px;flex-wrap:wrap;">'
+          +'<span style="font-weight:700;color:var(--gd);min-width:90px;">'+dot+' '+ml+'</span>'
+          +'<span style="color:var(--g600)">District: <strong style="color:var(--g800)">'+esc(r.district)+'</strong></span>'
+          +'<span style="color:var(--g600)">HHs: <strong style="color:var(--g800)">'+esc(r.hhCovered||0)+'</strong></span>'
+          +'<span style="color:var(--g600)">Compost: <strong style="color:var(--g800)">'+(comp>0?comp.toFixed(1)+' kg':'None')+'</strong></span>'
+          +'<span style="color:var(--g600)">User Fee: <strong style="color:var(--g800)">₹'+(parseFloat(r.ufAmount)||0).toLocaleString('en-IN')+'</strong></span>'
+          +'<span style="color:var(--g600)">UF%: <strong style="color:var(--g800)">'+ufp+'</strong></span>'
+          +(r.issues?'<span style="color:#DC2626">Issue: '+esc(r.issues)+'</span>':'')
+          +'</div>';
+      }).join('');
+      document.getElementById('spmuHistory').style.display='block';
+    } else { document.getElementById('spmuHistory').style.display='none'; }
+  } else { document.getElementById('spmuHistory').style.display='none'; }
+  var tb=document.getElementById('allTB');
+  if(!f.length){tb.innerHTML='<tr><td colspan="11"><div style="text-align:center;padding:30px;color:var(--g400);">No records.</div></td></tr>';return;}
+  tb.innerHTML=f.map(function(r){
+    var ufp=r.ufTarget>0?(parseFloat(r.ufCollected)/parseFloat(r.ufTarget)*100).toFixed(0)+'%':'—';
+    var comp=(parseFloat(r.compostProduced)||0)+(parseFloat(r.vermiProduced)||0);
+    var ct=comp>0?comp.toFixed(1)+' kg':'<span style="color:#DC2626;font-weight:700">None</span>';
+    var ml=r.reportMonth?new Date(r.reportMonth+'-01').toLocaleString('default',{month:'short',year:'numeric'}):'—';
+    var b=r.status==='ok'?'<span class="badge ok">✅</span>':r.status==='warn'?'<span class="badge warn" title="'+esc(r.reasons)+'">⚠</span>':'<span class="badge flag" title="'+esc(r.reasons)+'">🚩</span>';
+    return '<tr><td><strong>'+esc(r.shgName||'—')+'</strong></td><td>'+esc(r.gp||'—')+'<br><small style="color:#9ca3af">'+esc(r.block||'')+'</small></td><td>'+esc(r.district||'—')+'</td><td>'+ml+'</td><td>'+esc(r.hhCovered||0)+'</td><td>'+esc(r.trips||0)+'</td><td>'+ct+'</td><td>₹'+(parseFloat(r.ufAmount)||0).toLocaleString('en-IN')+'</td><td>'+ufp+'</td><td>'+(r.shgMeeting==='yes'?'✅':r.shgMeeting==='no'?'❌':'—')+'</td><td>'+b+'</td></tr>';
+  }).join('');
+}
+
+function renderGaps(){
+  var mF=document.getElementById('gMonth').value;
+  if(!mF){document.getElementById('noRepList').innerHTML='<span style="color:var(--g400);font-size:12px;">Select a month above to see gaps.</span>';document.getElementById('lowRepList').innerHTML='';return;}
+  var rep=new Set(fd.map(function(r){return r.district;}));
+  var cnt={};fd.forEach(function(r){cnt[r.district]=(cnt[r.district]||0)+1;});
+  var noR=ALL_D.filter(function(d){return!rep.has(d);});
+  var lowR=ALL_D.filter(function(d){return rep.has(d)&&cnt[d]<3;});
+  document.getElementById('noRepList').innerHTML=noR.length?noR.map(function(d){return'<span class="tag">'+d+'</span>';}).join(''):'<span style="color:var(--gm);font-weight:700;">✅ All 35 districts have reported.</span>';
+  document.getElementById('lowRepList').innerHTML=lowR.length?lowR.map(function(d){return'<span class="tag">'+d+' ('+cnt[d]+')</span>';}).join(''):'<span style="color:var(--gm);font-weight:700;">✅ All districts have 3+ reports.</span>';
+}
+
+function switchTab(t,btn){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.tc').forEach(function(c){c.classList.remove('active');});
+  document.getElementById('tc-'+t).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+function exportAll(){
+  if(!fd.length){alert('No data.');return;}
+  var h=['SHG/NGO','GP','Block','District','Month','Reporter','Mobile','HHs','Trips','Wet(kg)','Dry(kg)','DryMCF(kg)','Compost(kg)','Vermi(kg)','CompSold(kg)','CompRev(Rs)','RecycleRev(Rs)','UFTarget','UFCollected','UFAmount(Rs)','Meeting','Issues','Support','Status','Reasons'];
+  var rows=fd.map(function(r){return[r.shgName,r.gp,r.block,r.district,r.reportMonth,r.reporterName,r.mobile,r.hhCovered,r.trips,r.wetWaste,r.dryWaste,r.dryToMcf,r.compostProduced,r.vermiProduced,r.compostSold,r.compostRevenue,r.recycleRevenue,r.ufTarget,r.ufCollected,r.ufAmount,r.shgMeeting,r.issues,r.support,r.status,r.reasons].map(function(v){return'"'+String(v||'').replace(/"/g,'""')+'"';}).join(',');});
+  var csv=[h.join(',')].concat(rows).join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='SLWM_SPMU_ALL_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
